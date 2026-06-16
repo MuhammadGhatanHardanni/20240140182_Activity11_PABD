@@ -26,7 +26,6 @@ namespace CRUDMahasiswaADO
                 DataTable dtMahasiswa = dbLogic.getDataRekap(prodi, tglmasuk);
 
                 // 4. Instansiasi desain Report (.rpt)
-                // Pastikan "ReportMahasiswa" sesuai dengan nama file .rpt yang kamu buat
                 ReportMahasiswa report = new ReportMahasiswa();
                 report.SetDataSource(dtMahasiswa);
 
@@ -36,8 +35,11 @@ namespace CRUDMahasiswaADO
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Gagal Load data: " + ex.Message, "Error Laporan", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                // PERUBAHAN: Membongkar error asli (Inner Exception)
+                string errorAsli = ex.InnerException != null ? ex.InnerException.Message : ex.Message;
+
+                MessageBox.Show("Error Asli: " + errorAsli + "\n\nStack Trace:\n" + ex.StackTrace, "Detail Error Laporan", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
     }
-}   
+}

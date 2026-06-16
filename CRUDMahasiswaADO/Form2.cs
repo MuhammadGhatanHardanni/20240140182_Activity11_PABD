@@ -105,7 +105,8 @@ namespace CRUDMahasiswaADO
             }
         }
 
-        private void btnCetak_Click(object sender, EventArgs e) {
+        private void btnCetak_Click(object sender, EventArgs e)
+        {
             try
             {
                 // Memanggil FormReport dan mengirim parameter nama Prodi dan Tahun
@@ -114,7 +115,9 @@ namespace CRUDMahasiswaADO
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Gagal membuka laporan: " + ex.Message);
+                // PERUBAHAN: Membongkar error asli (Inner Exception) di Form2
+                string errorAsli = ex.InnerException != null ? ex.InnerException.Message : ex.Message;
+                MessageBox.Show("Error Asli dari Form2:\n\n" + errorAsli, "Detail Error Laporan", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
         private void label1_Click(object sender, EventArgs e) { }
