@@ -50,6 +50,74 @@ namespace CRUDMahasiswaADO
         }
 
         // Method utama untuk memuat dan menggambar grafik
+        public void loadDataChart()
+        {
+            chartProdi.Series.Clear();
+            chartProdi.Titles.Clear();
+            chartProdi.Legends.Clear();
+            chartProdi.ChartAreas.Clear();
+
+            ChartArea ca = new ChartArea("MainArea");
+            ca.AxisX.Title = "Program Studi";
+            ca.AxisY.Title = "Jumlah Mahasiswa";
+            ca.AxisX.LabelStyle.Angle = -45;
+            ca.BackColor = Color.Transparent;
+            chartProdi.ChartAreas.Add(ca);
+
+            try
+            {
+                // Menentukan data mana yang diambil dari DAL berdasarkan status button
+                if (button == 1)
+                {
+                    dt = dbLogic.getDataChartByTahun(dtpTanggalMasuk.Value);
+                }
+                else
+                {
+                    dt = dbLogic.getAllDataChart();
+                }
+
+                SeriesChartType tipe = (SeriesChartType)cmbTipe.SelectedValue;
+
+                if (tipe == SeriesChartType.Column)
+                {
+                    Series s = new Series("Mahasiswa");
+                    s.ChartType = SeriesChartType.Column;
+                    foreach (DataRow row in dt.Rows)
+                    {
+                        string prodi = row["NamaProdi"].ToString();
+                        int jumlah = Convert.ToInt32(row["JmlhMhs"]);
+                        s.Points.AddXY(prodi, jumlah);
+                    }
+                    chartProdi.Series.Add(s);
+                }
+                else
+                {
+                    Series s = new Series("Jumlah Mahasiswa");
+                    s.ChartType = tipe;
+                    s.IsValueShownAsLabel = true;
+                    s.Label = "#VAL";
+                    s.LegendText = "#VALX";
+                    foreach (DataRow row in dt.Rows)
+                    {
+                        string prodi = row["NamaProdi"].ToString();
+                        int jumlah = Convert.ToInt32(row["JmlhMhs"]);
+                        s.Points.AddXY(prodi, jumlah);
+                    }
+                    chartProdi.Series.Add(s);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Gagal load data: " + ex.Message);
+            }
+
+            Title title = new Title("Jumlah Mahasiswa per Program Studi", Docking.Top, new Font("Arial", 14, FontStyle.Bold), Color.DarkBlue);
+            chartProdi.Titles.Add(title);
+            Legend legend = new Legend("MainLegend");
+            legend.Docking = Docking.Right;
+            chartProdi.Legends.Add(legend);
+        }
+
         
     }
 }
