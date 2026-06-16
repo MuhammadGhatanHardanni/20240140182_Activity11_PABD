@@ -5,6 +5,8 @@ using System.Data;
 using System.Data.SqlClient;
 using System.Drawing;
 using System.Linq;
+using System.Net; // WAJIB: Untuk DNS
+using System.Net.Sockets; // WAJIB: Untuk membaca IP Address
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -13,9 +15,33 @@ namespace CRUDMahasiswaADO
 {
     public partial class Form2 : Form
     {
-        // Deklarasi variabel untuk koneksi dan manipulasi data dari database
-        static string connectionString = "Data Source=LAPTOP-VL5SDNPR\\GHATANHARDANNI;Initial Catalog=DB_AkademikADO; User ID=sa;Password=12345678";
-        SqlConnection conn = new SqlConnection(connectionString);
+        // 1. FUNGSI UNTUK MENGAMBIL IP ADDRESS OTOMATIS (Sesuai Modul)
+        public static string GetLocalIPAddress()
+        {
+            string localIP = string.Empty;
+            try
+            {
+                var host = Dns.GetHostEntry(Dns.GetHostName());
+                foreach (var ip in host.AddressList)
+                {
+                    if (ip.AddressFamily == AddressFamily.InterNetwork)
+                    {
+                        localIP = ip.ToString();
+                        break;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error getting local IP address: " + ex.Message);
+            }
+            return localIP;
+        }
+
+        // 2. CONNECTION STRING DIUPDATE MENGGUNAKAN FUNGSI DI ATAS
+        static string connectionString = $"Data Source={GetLocalIPAddress()}\\GHATANHARDANNI;Initial Catalog=DB_AkademikADO; User ID=sa;Password=12345678";
+
+        SqlConnection conn;
         SqlDataAdapter da;
         DataTable dtMahasiswa;
         DataTable dtProdi;
@@ -23,6 +49,8 @@ namespace CRUDMahasiswaADO
         public Form2()
         {
             InitializeComponent();
+            // 3. Inisialisasi koneksi diletakkan di sini agar IP terbaca saat form dimuat
+            conn = new SqlConnection(connectionString);
         }
 
         private void Form2_Load(object sender, EventArgs e)

@@ -4,14 +4,40 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Data;
-using System.Data.SqlClient; // Wajib ditambahkan untuk koneksi SQL Server
+using System.Data.SqlClient;
+using System.Net; // WAJIB: Untuk membaca DNS
+using System.Net.Sockets; // WAJIB: Untuk membaca IP
 
 namespace CRUDMahasiswaADO
 {
     internal class DAL
     {
-        // Connection string sudah disesuaikan dengan server kamu
-        static string connectionString = "Data Source=LAPTOP-VL5SDNPR\\GHATANHARDANNI; Initial Catalog=DB_AkademikADO; User ID=sa; Password=12345678;";
+        // 1. TAMBAHKAN FUNGSI IP OTOMATIS (Sesuai instruksi modul)
+        public static string GetLocalIPAddress()
+        {
+            string localIP = string.Empty;
+            try
+            {
+                var host = Dns.GetHostEntry(Dns.GetHostName());
+                foreach (var ip in host.AddressList)
+                {
+                    if (ip.AddressFamily == AddressFamily.InterNetwork)
+                    {
+                        localIP = ip.ToString();
+                        break;
+                    }
+                }
+            }
+            catch (Exception)
+            {
+                // Jika ingin melihat pesan error, aktifkan System.Windows.Forms di atas
+                // MessageBox.Show("Error getting local IP address: " + ex.Message);
+            }
+            return localIP;
+        }
+
+        // 2. UPDATE CONNECTION STRING MENGGUNAKAN FUNGSI DI ATAS
+        static string connectionString = $"Data Source={GetLocalIPAddress()}\\GHATANHARDANNI; Initial Catalog=DB_AkademikADO; User ID=sa; Password=12345678;";
 
         public string GetConnectionString()
         {
@@ -57,7 +83,7 @@ namespace CRUDMahasiswaADO
             {
                 SqlCommand command = new SqlCommand("sp_InsertMahasiswa", conn);
                 command.CommandType = CommandType.StoredProcedure;
-                command.Transaction = trans; // Kaitkan transaksi
+                command.Transaction = trans;
                 command.Parameters.AddWithValue("@pNIM", nim);
                 command.Parameters.AddWithValue("@pNama", nama);
                 command.Parameters.AddWithValue("@pAlamat", alamat);
@@ -65,7 +91,6 @@ namespace CRUDMahasiswaADO
                 command.Parameters.AddWithValue("@pJenisKelamin", jeniskelamin);
                 command.Parameters.AddWithValue("@pKodeProdi", kodeProdi);
 
-                // PERBAIKAN: Deklarasi parameter tipe VarBinary secara eksplisit
                 SqlParameter fotoParam = new SqlParameter("@pFoto", SqlDbType.VarBinary);
                 if (foto != null)
                     fotoParam.Value = foto;
@@ -100,7 +125,6 @@ namespace CRUDMahasiswaADO
             command.Parameters.AddWithValue("@pTanggalLahir", tanggallahir);
             command.Parameters.AddWithValue("@pKodeProdi", kodeProdi);
 
-            // PERBAIKAN: Deklarasi parameter tipe VarBinary secara eksplisit
             SqlParameter fotoParam = new SqlParameter("@pFoto", SqlDbType.VarBinary);
             if (foto != null)
                 fotoParam.Value = foto;
