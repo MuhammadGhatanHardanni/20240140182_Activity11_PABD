@@ -1,29 +1,18 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
 using System.Data;
-using System.Data.SqlClient; // Tambahan wajib untuk SQL Server
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace CRUDMahasiswaADO
 {
     public partial class FormReport : Form
     {
-        // Deklarasi variabel SQL
-        static string connectionString = "Data Source=LAPTOP-VL5SDNPR\\GHATANHARDANNI;Initial Catalog=DB_AkademikADO; User ID=sa;Password=12345678";
-        SqlConnection conn = new SqlConnection(connectionString);
-        SqlDataAdapter da;
-        DataTable dtMahasiswa;
+        // 1. Properti penampung parameter filter
+        string prodi;
+        DateTime tglmasuk;
 
-        // Properti penampung parameter filter
-        string prodi { get; set; }
-        DateTime tglmasuk { get; set; }
+        // 2. Instansiasi class DAL agar rapi dan terpusat
+        DAL dbLogic = new DAL();
 
-        // Ubah Constructor agar menerima parameter Prodi dan Tanggal
         public FormReport(string Prodi, DateTime TglMasuk)
         {
             InitializeComponent();
@@ -33,36 +22,21 @@ namespace CRUDMahasiswaADO
 
             try
             {
-                if (conn.State == ConnectionState.Closed)
-                {
-                    conn.Open();
-                }
+                // 3. Panggil method getDataRekap dari DAL.cs
+                DataTable dtMahasiswa = dbLogic.getDataRekap(prodi, tglmasuk);
 
-                // Mengeksekusi Stored Procedure
-                SqlCommand cmd = new SqlCommand("sp_Report", conn);
-                cmd.CommandType = CommandType.StoredProcedure;
-
-                // Menambahkan parameter sesuai tipe data di prosedur
-                cmd.Parameters.AddWithValue("@inProdi", prodi);
-                cmd.Parameters.AddWithValue("@inTglMsuk", tglmasuk.Year.ToString()); // Ambil tahunnya saja
-
-                da = new SqlDataAdapter(cmd);
-                dtMahasiswa = new DataTable();
-                da.Fill(dtMahasiswa);
-                conn.Close();
-
-                // Instansiasi file desain .rpt Anda
-                // Pastikan "ReportMahasiswa" sesuai dengan nama file .rpt yang Anda buat
+                // 4. Instansiasi desain Report (.rpt)
+                // Pastikan "ReportMahasiswa" sesuai dengan nama file .rpt yang kamu buat
                 ReportMahasiswa report = new ReportMahasiswa();
                 report.SetDataSource(dtMahasiswa);
 
-                // Tampilkan ke CrystalReportViewer
+                // 5. Tampilkan ke Viewer
                 crystalReportViewer1.ReportSource = report;
                 crystalReportViewer1.Refresh();
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Gagal Load data: " + ex.Message);
+                MessageBox.Show("Gagal Load data: " + ex.Message, "Error Laporan", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
     }
