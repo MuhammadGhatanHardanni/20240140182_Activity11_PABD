@@ -49,6 +49,45 @@ namespace CRUDMahasiswaADO
             return dtMahasiswa;
         }
 
+        public void InsertMhs(string nim, string nama, string alamat, string jeniskelamin, DateTime tanggallahir, string kodeProdi, byte[] foto)
+        {
+            if (conn.State == ConnectionState.Closed) conn.Open();
+            SqlTransaction trans = conn.BeginTransaction();
+            try
+            {
+                SqlCommand command = new SqlCommand("sp_InsertMahasiswa", conn);
+                command.CommandType = CommandType.StoredProcedure;
+                command.Transaction = trans; // Kaitkan transaksi
+                command.Parameters.AddWithValue("@pNIM", nim);
+                command.Parameters.AddWithValue("@pNama", nama);
+                command.Parameters.AddWithValue("@pAlamat", alamat);
+                command.Parameters.AddWithValue("@pTanggalLahir", tanggallahir);
+                command.Parameters.AddWithValue("@pJenisKelamin", jeniskelamin);
+                command.Parameters.AddWithValue("@pKodeProdi", kodeProdi);
+
+                // PERBAIKAN: Deklarasi parameter tipe VarBinary secara eksplisit
+                SqlParameter fotoParam = new SqlParameter("@pFoto", SqlDbType.VarBinary);
+                if (foto != null)
+                    fotoParam.Value = foto;
+                else
+                    fotoParam.Value = DBNull.Value;
+
+                command.Parameters.Add(fotoParam);
+
+                command.ExecuteNonQuery();
+                trans.Commit();
+            }
+            catch (Exception)
+            {
+                trans.Rollback();
+                throw;
+            }
+            finally
+            {
+                conn.Close();
+            }
+        }
+
         
     }
 }
